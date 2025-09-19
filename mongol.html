@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MONGOLCHARI — Team Work Tracker</title>
+
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root{
+      --bg:#f6f8fb;
+      --card:rgba(0,0,0,0.6);
+      --muted:#6b7280;
+      --accent:#1d0a02; 
+      --accent-2:#800000; 
+      --danger:#ef4444;
+      --radius:12px;
+       font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0}
+    body{
+      background: linear-gradient(180deg, #8d2a03 0%, #eef3fb 100%);
+      color:#0f172a;
+      padding:32px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+    }
+
+.title {
+    color: #ffffff; /* White text */
+    padding: 0px;
+    display: flex;
+    align-items: flex-start;
+      -webkit-text-stroke: 0px #000000; /* Black outline around letters */
+    justify-content: center;
+    font-family: 'Roboto', sans-serif; /* Clean modern font */
+    font-weight: 700; /* Bold */
+    font-size: 2.5rem; /* Bigger title */
+    text-transform: uppercase; /* Makes it look strong */
+    letter-spacing: 2px; /* Slight spacing for style */
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.5); /* Cool shadow effect */
+}
+
+
+
+    .app{
+      width:100%;
+      max-width:1100px;
+      background:var(--card);
+      border-radius:16px;
+      box-shadow:0 8px 30px rgba(15,23,42,0.08);
+      padding:24px;
+      display:grid;
+      grid-template-columns: 420px 1fr;
+      gap:20px;
+    }
+
+    header{
+      grid-column:1/-1;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .brand{display:flex;align-items:center;gap:14px;}
+    .logo{
+      width:100px;height: 100%;
+      border-radius:10px;
+      background:linear-gradient(135deg,var(--accent-2),var(--accent));
+      display:flex;align-items:center;justify-content:center;
+      color:white;font-weight:700;font-size:18px;
+      box-shadow:0 6px 18px rgba(37,99,235,0.12);
+    }
+    .title{font-size:30px;font-weight:700}
+    .subtitle{font-size:13px;color:var(--muted)}
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,251,255,0.9));
+      border-radius:var(--radius);
+      padding:18px;
+      border:1px solid rgba(15,23,42,0.04)
+    }
+
+    form .field{margin-bottom:12px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input[type=text], input[type=date], textarea, select, input[type=file]{
+      width:100%;padding:10px 12px;border-radius:8px;
+      border:1px solid rgba(15,23,42,0.06);background:transparent;font-size:14px
+    }
+    textarea{min-height:100px;resize:vertical}
+
+    .muted-small{font-size:12px;color:var(--muted)}
+
+    .primary-btn{
+      background:linear-gradient(90deg,var(--accent-2),var(--accent));
+      color:white;padding:10px 14px;border-radius:10px;
+      border:none;font-weight:600;cursor:pointer
+    }
+    .ghost-btn{
+      background:transparent;border:1px solid rgba(15,23,42,0.06);
+      padding:8px 12px;border-radius:8px;cursor:pointer
+    }
+    video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1; /* send behind app */
+    }
+
+    .records{padding-right:6px}
+    .record-item{
+      display:flex;align-items:flex-start;gap:12px;
+      padding:12px;border-radius:10px;
+      border:1px solid rgba(15,23,42,0.04);
+      margin-bottom:10px;background:linear-gradient(180deg,#fff,#fbfdff)
+    }
+    .record-meta{min-width:110px;font-size:13px;color:var(--muted)}
+    .record-body{flex:1}
+    .record-actions{display:flex;gap:8px;margin-left:8px}
+    .pill{background:rgba(15,23,42,0.04);padding:6px 8px;border-radius:999px;font-size:12px}
+
+    .summary{display:flex;gap:12px;flex-wrap:wrap}
+    .stat{flex:1;min-width:160px;background:linear-gradient(180deg,#fff,#fbfdff);
+      padding:12px;border-radius:10px;border:1px solid rgba(15,23,42,0.04)}
+    .stat h3{margin:0;font-size:22px}
+    .stat p{margin:6px 0 0 0;color:var(--muted)}
+
+    .topbar-actions{display:flex;gap:8px;align-items:center}
+    footer{grid-column:1/-1;margin-top:8px;text-align:center;color:var(--muted);font-size:13px}
+
+    @media (max-width:980px){
+      .app{grid-template-columns:1fr; padding:16px}
+    }
+  </style>
+</head>
+<body>
+<video autoplay loop muted playsinline>
+  <source src="etai.mp4" type="video/mp4">
+</video>
+<div class="app" role="application">
+
+  <header>
+    <div class="brand">
+<div class="logo">
+  <img src="image.jpg" 
+       alt="MongolChari Logo" 
+       style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+</div>
+
+      <div>
+        <div class="title">MONGOLCHARI</div>
+        <div class="subtitle">Team Work Tracker — simple · secure · offline</div>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <button id="exportExcel" class="primary-btn">Export to Excel</button>
+      <button id="clearAll" class="ghost-btn">Clear All</button>
+    </div>
+  </header>
+
+  <!-- left column -->
+  <div>
+    <div class="card">
+      <h3 style="margin-top:0">Add Product Name</h3>
+      <form id="workForm">
+        <div class="field">
+          <label for="memberName">Team Member</label>
+          <input id="memberName" type="text" placeholder="e.g. Ayesha Rahman" required />
+        </div>
+
+        <div class="field">
+          <label for="workDate">Date</label>
+          <input id="workDate" type="date" required />
+        </div>
+
+        <div class="field">
+          <label for="workDesc">Product Description</label>
+          <textarea id="workDesc" placeholder="What did they do?" required></textarea>
+        </div>
+
+        <div class="field">
+          <label for="workImage">Attach Image</label>
+          <input id="workImage" type="file" accept="image/*" />
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <button type="submit" class="primary-btn">Save Record</button>
+          <button type="button" id="resetForm" class="ghost-btn">Reset</button>
+        </div>
+      </form>
+    </div>
+
+    <div style="margin-top:16px" class="card">
+      <h4 style="margin:0 0 10px 0">Summary</h4>
+      <div class="summary">
+        <div class="stat">
+          <h3 id="todayCount">0</h3>
+          <p>People working today</p>
+        </div>
+        <div class="stat">
+          <h3 id="todayTasks">0</h3>
+          <p>Total tasks today</p>
+        </div>
+        <div class="stat">
+          <h3 id="uniqueMembers">0</h3>
+          <p>Active members (this month)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- right column -->
+  <div>
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
+        <div>
+          <h3 style="margin:0">Work Records</h3>
+          <div class="muted-small">Stored in your browser. Export to Excel to save externally.</div>
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="search" type="text" placeholder="Search name or task" style="padding:8px;border-radius:8px;border:1px solid rgba(15,23,42,0.06)"/>
+          <select id="filterMonth" style="padding:8px;border-radius:8px;border:1px solid rgba(15,23,42,0.06)">
+            <option value="all">All months</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="records" id="records"></div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0">Workload Distribution (this month)</h4>
+      <canvas id="workChart" height="160"></canvas>
+    </div>
+  </div>
+
+  <footer>Made for <strong>MONGOLCHARI</strong> — Offline & privacy-friendly</footer>
+</div>
+
+<script>
+const FORM = document.getElementById('workForm');
+const memberName = document.getElementById('memberName');
+const workDate = document.getElementById('workDate');
+const workDesc = document.getElementById('workDesc');
+const workImage = document.getElementById('workImage');
+const recordsEl = document.getElementById('records');
+const searchEl = document.getElementById('search');
+const filterMonth = document.getElementById('filterMonth');
+
+const todayCountEl = document.getElementById('todayCount');
+const todayTasksEl = document.getElementById('todayTasks');
+const uniqueMembersEl = document.getElementById('uniqueMembers');
+
+const exportExcelBtn = document.getElementById('exportExcel');
+const clearAllBtn = document.getElementById('clearAll');
+
+let records = JSON.parse(localStorage.getItem('mc_records') || '[]');
+let editingIndex = null;
+let chart;
+
+function isoToday(){ return new Date().toISOString().split('T')[0]; }
+
+function init(){
+  populateMonthFilter();
+  render();
+  workDate.value = isoToday();
+}
+
+function populateMonthFilter(){
+  const months = new Set(records.map(r => r.date.slice(0,7)));
+  const arr = Array.from(months).sort().reverse();
+  const current = isoToday().slice(0,7);
+  if(!months.has(current)) arr.unshift(current);
+
+  filterMonth.innerHTML = '<option value="all">All months</option>';
+  arr.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    filterMonth.appendChild(opt);
+  });
+}
+
+function escapeHtml(txt){ 
+  return (txt||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); 
+}
+
+function render(){
+  recordsEl.innerHTML = '';
+  const q = searchEl.value.trim().toLowerCase();
+  const monthFilter = filterMonth.value;
+
+  const filtered = records.filter((r)=>{
+    if(monthFilter !== 'all' && r.date.slice(0,7) !== monthFilter) return false;
+    if(!q) return true;
+    return r.name.toLowerCase().includes(q) || r.desc.toLowerCase().includes(q) || r.date.includes(q);
+  }).sort((a,b)=> b.date.localeCompare(a.date));
+
+  filtered.forEach((r, idx) => {
+    const item = document.createElement('div');
+    item.className = 'record-item';
+    item.innerHTML = `
+      <div class="record-meta">
+        <div style="font-weight:600">${escapeHtml(r.name)}</div>
+        <div class="muted-small">${r.date}</div>
+        <div class="pill" style="margin-top:8px">#${r.id || (idx+1)}</div>
+      </div>
+      <div class="record-body">
+        <div style="font-size:14px;margin-bottom:6px">${escapeHtml(r.desc)}</div>
+        ${r.image ? `<img src="${r.image}" style="max-width:100%;margin-top:6px;border-radius:8px;">` : ''}
+        <div class="muted-small">Added: ${r.addedAt || '—'}</div>
+      </div>
+      <div class="record-actions">
+        <button class="ghost-btn" data-action="edit" data-index="${r._idx}" aria-label="Edit record">Edit</button>
+        <button class="ghost-btn" data-action="delete" data-index="${r._idx}" aria-label="Delete record" style="border-color:rgba(239,68,68,0.08);">Delete</button>
+      </div>
+    `;
+    recordsEl.appendChild(item);
+  });
+
+  const today = isoToday();
+  const todays = records.filter(r => r.date === today);
+  const uniqueMembers = new Set(records.filter(r => r.date.slice(0,7) === today.slice(0,7)).map(r=>r.name));
+
+  todayCountEl.textContent = new Set(todays.map(t=>t.name)).size;
+  todayTasksEl.textContent = todays.length;
+  uniqueMembersEl.textContent = uniqueMembers.size;
+
+  recordsEl.querySelectorAll('button[data-action]').forEach(btn => {
+    btn.addEventListener('click', (e)=>{
+      const action = btn.getAttribute('data-action');
+      const index = parseInt(btn.getAttribute('data-index'),10);
+      if(action === 'edit') startEdit(index);
+      if(action === 'delete') removeRecord(index);
+    });
+  });
+
+  updateChart();
+}
+
+FORM.addEventListener('submit', function(e){
+  e.preventDefault();
+  const name = memberName.value.trim();
+  const date = workDate.value;
+  const desc = workDesc.value.trim();
+  if(!name || !date || !desc) return alert('Please fill all fields.');
+
+  const file = workImage.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = function(event){
+      const imgBase64 = event.target.result;
+      saveRecord(name, date, desc, imgBase64);
+    }
+    reader.readAsDataURL(file);
+  } else {
+    saveRecord(name, date, desc, null);
+  }
+});
+
+function saveRecord(name, date, desc, imgBase64){
+  if(editingIndex !== null){
+    records[editingIndex] = {...records[editingIndex], name, date, desc, image: imgBase64};
+    editingIndex = null;
+  } else {
+    const rec = { name, date, desc, image: imgBase64, addedAt: new Date().toLocaleString(), _idx: Date.now() };
+    records.push(rec);
+  }
+
+  save();
+  FORM.reset();
+  workDate.value = isoToday();
+  render();
+}
+
+document.getElementById('resetForm').addEventListener('click', ()=>{
+  FORM.reset(); 
+  workDate.value = isoToday(); 
+  editingIndex = null; 
+});
+
+function startEdit(idxKey){
+  const idx = records.findIndex(r => r._idx === idxKey);
+  if(idx === -1) return;
+  editingIndex = idx;
+  const r = records[idx];
+  memberName.value = r.name; 
+  workDate.value = r.date; 
+  workDesc.value = r.desc;
+}
+
+function removeRecord(idxKey){
+  if(!confirm('Delete this record?')) return;
+  records = records.filter(r => r._idx !== idxKey);
+  save(); render();
+}
+
+clearAllBtn.addEventListener('click', ()=>{
+  if(!confirm('Clear all records? This cannot be undone.')) return;
+  records = [];
+  save(); render(); populateMonthFilter();
+});
+
+searchEl.addEventListener('input', ()=>render());
+filterMonth.addEventListener('change', ()=>render());
+
+function save(){ 
+  localStorage.setItem('mc_records', JSON.stringify(records)); 
+  populateMonthFilter(); 
+}
+
+exportExcelBtn.addEventListener('click', () => {
+  if (records.length === 0) {
+    alert("No records to export!");
+    return;
+  }
+
+  const data = records.map((r, i) => ({
+    ID: r.id || (i + 1),
+    "Team Member": r.name,
+    Date: r.date,
+    "Work Description": r.desc,
+    "Image (Base64)": r.image || '',
+    "Added At": r.addedAt || ''
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Work Records");
+
+  XLSX.writeFile(wb, "work_records.xlsx");
+});
+
+function updateChart(){
+  // optional: implement Chart.js logic
+}
+
+init();
+</script>
+</body>
+</html>
